@@ -25,11 +25,11 @@ aws:
     # ▼ REQUIRED: paste your App Client ID here
     client-id: 79cqa5kktngtgrgcjt4e6unnn6
     # ▼ OPTIONAL: only needed if your App Client has a secret enabled
-    client-secret: 1k7ibjb1rdn24qmbpu6ttmfq96iqnspage6jpprc0utp4lp1ei7u
+    client-secret: dummy
   credentials:
     # ▼ REQUIRED: AWS IAM credentials with cognito-idp:* permissions
     access-key: AKIATA4RHQSN4FTP5TMR
-    secret-key: 24iu3VFXcOjubqRGVD+iGxzwdB5MSN+g9aOlkJu5
+    secret-key: dummy
 
 management:
   endpoints:
