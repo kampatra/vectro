@@ -1,0 +1,116 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vectro
+  namespace: vectro
+  labels:
+    app: vectro
+spec:
+  replicas: 1                      # single container as requested
+  selector:
+    matchLabels:
+      app: vectro
+  template:
+    metadata:
+      labels:
+        app: vectro
+    spec:
+      # ── Pull from ECR ──────────────────────────────────────────────────────
+      # Ensure the EKS node IAM role has ecr:GetAuthorizationToken +
+      # ecr:BatchGetImage + ecr:GetDownloadUrlForLayer permissions.
+      containers:
+        - name: vectro
+          image: 208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+
+          # ── Resource limits (small / right-sized for a single Spring Boot pod) ──
+          resources:
+            requests:
+              cpu: 250m
+              memory: 256Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
+
+          # ── Environment — non-sensitive values from ConfigMap ──────────────
+          envFrom:
+            - configMapRef:
+                name: vectro-config
+
+          # ── Environment — sensitive values from Secret ─────────────────────
+          env:
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: vectro-secrets
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vectro-secrets
+                  key: AWS_SECRET_ACCESS_KEY
+            - name: COGNITO_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: vectro-secrets
+                  key: COGNITO_CLIENT_SECRET
+
+            # Override application.yml values via Spring env-var binding
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: vectro-config
+                  key: COGNITO_ISSUER_URI
+            - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_JWK_SET_URI
+              valueFrom:
+                configMapKeyRef:
+                  name: vectro-config
+                  key: COGNITO_JWKS_URI
+            - name: AWS_COGNITO_USER_POOL_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: vectro-config
+                  key: COGNITO_USER_POOL_ID
+            - name: AWS_COGNITO_CLIENT_ID
+              valueFrom:
+                configMapKeyRef:
+                  name: vectro-config
+                  key: COGNITO_CLIENT_ID
+            - name: AWS_COGNITO_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: vectro-secrets
+                  key: COGNITO_CLIENT_SECRET
+            - name: AWS_CREDENTIALS_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vectro-secrets
+                  key: AWS_ACCESS_KEY_ID
+            - name: AWS_CREDENTIALS_SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: vectro-secrets
+                  key: AWS_SECRET_ACCESS_KEY
+
+          # ── Health checks using Spring Actuator ────────────────────────────
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 45   # Spring Boot needs ~30-40s to start
+            periodSeconds: 15
+            failureThreshold: 3
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            failureThreshold: 3
+
+      # ── Graceful shutdown ──────────────────────────────────────────────────
+      terminationGracePeriodSeconds: 30

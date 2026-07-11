@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vectro-config
+  namespace: vectro
+data:
+  # ── Server ────────────────────────────────────────────────────────────────
+  SERVER_PORT: "8080"
+
+  # ── AWS Region ────────────────────────────────────────────────────────────
+  AWS_REGION: "us-east-1"
+
+  # ── Cognito User Pool ─────────────────────────────────────────────────────
+  COGNITO_USER_POOL_ID: "us-east-1_T6dPgrH15"
+  COGNITO_CLIENT_ID: "79cqa5kktngtgrgcjt4e6unnn6"
+  COGNITO_ISSUER_URI: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_T6dPgrH15"
+  COGNITO_JWKS_URI: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_T6dPgrH15/.well-known/jwks.json"
+
+  # ── Logging ───────────────────────────────────────────────────────────────
+  LOGGING_LEVEL_ROOT: "INFO"
+  LOGGING_LEVEL_APP: "DEBUG"
