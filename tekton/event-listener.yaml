@@ -1,0 +1,55 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: EventListener
+metadata:
+  name: vectro-event-listener
+  namespace: tekton-builds
+spec:
+  serviceAccountName: tekton-sa
+  triggers:
+    - name: github-push-trigger
+      interceptors:
+        # Validate the GitHub webhook signature (HMAC-SHA256)
+        - ref:
+            name: github
+          params:
+            - name: secretRef
+              value:
+                secretName: github-webhook-secret
+                secretKey: secret
+            - name: eventTypes
+              value:
+                - push
+
+        # Filter: only trigger on pushes to the main branch
+        - ref:
+            name: cel
+          params:
+            - name: filter
+              value: "body.ref == 'refs/heads/main'"
+
+      bindings:
+        - ref: vectro-trigger-binding
+
+      template:
+        ref: vectro-trigger-template
+---
+# ── Expose the EventListener via a LoadBalancer so GitHub can reach it ────────
+# The external hostname is used as the GitHub webhook Payload URL.
+# To restrict access: add an AWS Security Group rule allowing only
+# GitHub webhook IPs: https://api.github.com/meta (look for "hooks" key)
+apiVersion: v1
+kind: Service
+metadata:
+  name: el-vectro-event-listener
+  namespace: tekton-builds
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"   # faster than classic ELB
+spec:
+  type: LoadBalancer
+  selector:
+    eventlistener: vectro-event-listener
+  ports:
+    - name: http-listener
+      port: 8080
+      targetPort: 8080
+      protocol: TCP

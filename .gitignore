@@ -1,0 +1,16 @@
+# Maven build output — never commit compiled artifacts
+target/
+
+# IDE files
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Local environment overrides
+.env
+*.local

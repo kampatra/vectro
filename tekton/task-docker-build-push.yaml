@@ -1,0 +1,40 @@
+apiVersion: tekton.dev/v1
+kind: Task
+metadata:
+  name: docker-build-push
+  namespace: tekton-builds
+spec:
+  params:
+    - name: IMAGE
+      description: Full ECR image URI with tag (e.g. 208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:abc1234)
+      type: string
+    - name: GIT_REVISION
+      description: Short git commit SHA (7 chars) used as image tag
+      type: string
+  workspaces:
+    - name: source
+      description: Workspace containing Dockerfile and built JAR
+  steps:
+    # Kaniko builds Docker images without needing the Docker daemon.
+    # It runs as a standard container — no privileged mode, no host socket.
+    # IRSA on the ServiceAccount provides AWS credentials for ECR auth.
+    - name: build-and-push
+      image: gcr.io/kaniko-project/executor:latest
+      workingDir: $(workspaces.source.path)
+      env:
+        - name: AWS_REGION
+          value: us-east-1
+      args:
+        - --dockerfile=Dockerfile
+        - --context=$(workspaces.source.path)
+        - --destination=208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:$(params.GIT_REVISION)
+        - --destination=208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:latest
+        - --cache=true
+        - --cache-repo=208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro/cache
+      resources:
+        requests:
+          cpu: 500m
+          memory: 1Gi
+        limits:
+          cpu: "1"
+          memory: 2Gi

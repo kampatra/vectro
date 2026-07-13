@@ -1,0 +1,76 @@
+apiVersion: tekton.dev/v1
+kind: Pipeline
+metadata:
+  name: vectro-ci-pipeline
+  namespace: tekton-builds
+spec:
+  params:
+    - name: git-url
+      type: string
+      description: GitHub repository URL
+      default: https://github.com/kampatra/vectro
+
+    - name: git-revision
+      type: string
+      description: Full git commit SHA or branch name to build
+      default: main
+
+    - name: git-short-sha
+      type: string
+      description: Short commit SHA (7 chars) used as the Docker image tag
+
+  workspaces:
+    - name: shared-workspace
+      description: Shared PVC workspace passed to all tasks
+
+  tasks:
+    # ── Task 1: Clone the GitHub repository ──────────────────────────────────
+    - name: fetch-source
+      taskRef:
+        name: git-clone           # from Tekton Catalog (installed in Step 2)
+      workspaces:
+        - name: output
+          workspace: shared-workspace
+      params:
+        - name: url
+          value: $(params.git-url)
+        - name: revision
+          value: $(params.git-revision)
+
+    # ── Task 2: Build the Maven JAR ───────────────────────────────────────────
+    - name: maven-build
+      taskRef:
+        name: maven-build
+      runAfter:
+        - fetch-source
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+
+    # ── Task 3: Build and push Docker image to ECR ────────────────────────────
+    - name: docker-build-push
+      taskRef:
+        name: docker-build-push
+      runAfter:
+        - maven-build
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: IMAGE
+          value: 208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:$(params.git-short-sha)
+        - name: GIT_REVISION
+          value: $(params.git-short-sha)
+
+    # ── Task 4: Update image tag in deployment.yaml and push to GitHub ────────
+    - name: update-image-tag
+      taskRef:
+        name: update-image-tag
+      runAfter:
+        - docker-build-push
+      workspaces:
+        - name: source
+          workspace: shared-workspace
+      params:
+        - name: GIT_REVISION
+          value: $(params.git-short-sha)

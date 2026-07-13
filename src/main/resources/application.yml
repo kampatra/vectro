@@ -23,13 +23,13 @@ aws:
   cognito:
     user-pool-id: us-east-1_T6dPgrH15
     # ▼ REQUIRED: paste your App Client ID here
-    client-id: dummy
+    client-id: 79cqa5kktngtgrgcjt4e6unnn6
     # ▼ OPTIONAL: only needed if your App Client has a secret enabled
-    client-secret: dummy
+    client-secret: 1k7ibjb1rdn24qmbpu6ttmfq96iqnspage6jpprc0utp4lp1ei7u
   credentials:
     # ▼ REQUIRED: AWS IAM credentials with cognito-idp:* permissions
-    access-key: dummy
-    secret-key: dummy
+    access-key: AKIATA4RHQSN4FTP5TMR
+    secret-key: 24iu3VFXcOjubqRGVD+iGxzwdB5MSN+g9aOlkJu5
 
 management:
   endpoints:

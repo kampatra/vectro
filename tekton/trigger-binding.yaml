@@ -1,0 +1,18 @@
+apiVersion: triggers.tekton.dev/v1beta1
+kind: TriggerBinding
+metadata:
+  name: vectro-trigger-binding
+  namespace: tekton-builds
+spec:
+  params:
+    # Clone URL from GitHub webhook payload
+    - name: git-url
+      value: $(body.repository.clone_url)
+
+    # Full commit SHA that triggered the push
+    - name: git-revision
+      value: $(body.after)
+
+    # First 7 characters of the SHA — used as the Docker image tag
+    - name: git-short-sha
+      value: $(body.after[0:7])

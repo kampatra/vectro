@@ -8,9 +8,9 @@ metadata:
 spec:
   project: default
 
-  # ── Source — your Git repository ──────────────────────────────────────────
+  # ── Source — GitHub repository ────────────────────────────────────────────
   source:
-    repoURL: <YOUR_CODECOMMIT_OR_GIT_REPO_URL>   # e.g. https://git-codecommit.us-east-1.amazonaws.com/v1/repos/vectro
+    repoURL: https://github.com/kampatra/vectro   # public GitHub repo
     targetRevision: main                          # branch to track
     path: k8s                                     # folder containing the manifests
 
