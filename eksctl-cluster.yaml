@@ -4,7 +4,7 @@ kind: ClusterConfig
 metadata:
   name: vectro-cluster
   region: us-east-1
-  version: "1.29"
+  version: "1.32"
 
 iam:
   withOIDC: true   # required for IRSA (IAM Roles for Service Accounts)

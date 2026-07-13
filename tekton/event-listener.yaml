@@ -43,7 +43,8 @@ metadata:
   name: el-vectro-event-listener
   namespace: tekton-builds
   annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: "nlb"   # faster than classic ELB
+    service.beta.kubernetes.io/aws-load-balancer-type: "external"
+    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
 spec:
   type: LoadBalancer
   selector:

@@ -29,8 +29,7 @@ spec:
         - --context=$(workspaces.source.path)
         - --destination=208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:$(params.GIT_REVISION)
         - --destination=208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:latest
-        - --cache=true
-        - --cache-repo=208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro/cache
+        - --snapshot-mode=redo   # faster builds
       resources:
         requests:
           cpu: 500m
