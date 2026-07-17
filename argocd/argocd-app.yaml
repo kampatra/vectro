@@ -34,13 +34,13 @@ spec:
         factor: 2
         maxDuration: 1m
 
-  # ── Ignore differences for the Secret ─────────────────────────────────────
-  # Prevents ArgoCD from overwriting the manually applied real secret
-  # with the placeholder REPLACE_ME values from Git.
+  # ── Ignore differences for the CSI-synced Secret ──────────────────────────
+  # vectro-cognito-secret is created and managed by the Secrets Store CSI
+  # driver at runtime. ArgoCD should not attempt to manage or diff its data.
   ignoreDifferences:
     - group: ""
       kind: Secret
-      name: vectro-secrets
+      name: vectro-cognito-secret
       namespace: vectro
       jsonPointers:
         - /data

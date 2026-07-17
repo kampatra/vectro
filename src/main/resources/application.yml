@@ -5,31 +5,35 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          # Cognito JWKS endpoint – Spring validates incoming Bearer tokens automatically
-          issuer-uri: https://cognito-idp.us-east-1.amazonaws.com/us-east-1_tQhHxC9IH
-          jwk-set-uri: https://cognito-idp.us-east-1.amazonaws.com/us-east-1_tQhHxC9IH/.well-known/jwks.json
+          # Cognito JWKS endpoint – Spring validates incoming Bearer tokens automatically.
+          # Overridden at runtime via env vars injected from the ConfigMap.
+          issuer-uri: ${COGNITO_ISSUER_URI}
+          jwk-set-uri: ${COGNITO_JWKS_URI}
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
 
 # ─────────────────────────────────────────────────────────────────────────────
-# AWS Cognito Configuration
-# Replace the placeholder values below with your actual Cognito App Client
-# details from the AWS Console → Cognito → User Pools → us-east-1_tQhHxC9IH
-#   → App Clients
+# AWS / Cognito Configuration
+#
+# Non-sensitive values are provided via the ConfigMap (env vars injected at
+# pod startup). Sensitive values (client-secret) come from AWS Secrets Manager
+# via the Secrets Store CSI driver – mounted as env var COGNITO_CLIENT_SECRET.
+#
+# IAM credentials are NOT configured here. The AWS SDK resolves them
+# automatically through the DefaultCredentialsProvider chain:
+#   - IRSA / EKS Pod Identity in production
+#   - ~/.aws/credentials or env vars for local development
 # ─────────────────────────────────────────────────────────────────────────────
 aws:
-  region: us-east-1
+  region: ${AWS_REGION:us-east-1}
   cognito:
-    user-pool-id: us-east-1_T6dPgrH15
-    # ▼ REQUIRED: paste your App Client ID here
-    client-id: 79cqa5kktngtgrgcjt4e6unnn6
-    # ▼ OPTIONAL: only needed if your App Client has a secret enabled
-    client-secret: 1k7ibjb1rdn24qmbpu6ttmfq96iqnspage6jpprc0utp4lp1ei7u
-  credentials:
-    # ▼ REQUIRED: AWS IAM credentials with cognito-idp:* permissions
-    access-key: AKIATA4RHQSN4FTP5TMR
-    secret-key: 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
+    user-pool-id: ${AWS_COGNITO_USER_POOL_ID}
+    client-id: ${AWS_COGNITO_CLIENT_ID}
+    # Injected at runtime from AWS Secrets Manager via Secrets Store CSI driver.
+    # Falls back to empty string so the app starts without a secret for clients
+    # that do not have a client secret configured.
+    client-secret: ${COGNITO_CLIENT_SECRET:}
 
 management:
   endpoints:
@@ -48,7 +52,7 @@ springdoc:
 
 logging:
   level:
-    root: INFO
-    com.example.auth: DEBUG
+    root: ${LOGGING_LEVEL_ROOT:INFO}
+    com.example.auth: ${LOGGING_LEVEL_APP:DEBUG}
     org.springframework.security: INFO
     software.amazon.awssdk: WARN

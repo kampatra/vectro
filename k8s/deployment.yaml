@@ -6,7 +6,7 @@ metadata:
   labels:
     app: vectro
 spec:
-  replicas: 1                      # single container as requested
+  replicas: 1
   selector:
     matchLabels:
       app: vectro
@@ -15,9 +15,11 @@ spec:
       labels:
         app: vectro
     spec:
-      # ── Pull from ECR ──────────────────────────────────────────────────────
-      # Ensure the EKS node IAM role has ecr:GetAuthorizationToken +
-      # ecr:BatchGetImage + ecr:GetDownloadUrlForLayer permissions.
+      # ── Service Account – annotated with the IAM role ARN for IRSA ─────────
+      # The AWS SDK (DefaultCredentialsProvider) will pick up credentials from
+      # the IRSA token automatically. No static keys needed.
+      serviceAccountName: vectro-sa
+
       containers:
         - name: vectro
           image: 208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:latest
@@ -26,7 +28,7 @@ spec:
             - containerPort: 8080
               protocol: TCP
 
-          # ── Resource limits (small / right-sized for a single Spring Boot pod) ──
+          # ── Resource limits ────────────────────────────────────────────────
           resources:
             requests:
               cpu: 250m
@@ -35,30 +37,13 @@ spec:
               cpu: 500m
               memory: 512Mi
 
-          # ── Environment — non-sensitive values from ConfigMap ──────────────
+          # ── Non-sensitive config from ConfigMap ────────────────────────────
           envFrom:
             - configMapRef:
                 name: vectro-config
 
-          # ── Environment — sensitive values from Secret ─────────────────────
+          # ── Spring JWT config overrides from ConfigMap ─────────────────────
           env:
-            - name: AWS_ACCESS_KEY_ID
-              valueFrom:
-                secretKeyRef:
-                  name: vectro-secrets
-                  key: AWS_ACCESS_KEY_ID
-            - name: AWS_SECRET_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: vectro-secrets
-                  key: AWS_SECRET_ACCESS_KEY
-            - name: COGNITO_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: vectro-secrets
-                  key: COGNITO_CLIENT_SECRET
-
-            # Override application.yml values via Spring env-var binding
             - name: SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI
               valueFrom:
                 configMapKeyRef:
@@ -79,28 +64,29 @@ spec:
                 configMapKeyRef:
                   name: vectro-config
                   key: COGNITO_CLIENT_ID
-            - name: AWS_COGNITO_CLIENT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: vectro-secrets
-                  key: COGNITO_CLIENT_SECRET
-            - name: AWS_CREDENTIALS_ACCESS_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: vectro-secrets
-                  key: AWS_ACCESS_KEY_ID
-            - name: AWS_CREDENTIALS_SECRET_KEY
-              valueFrom:
-                secretKeyRef:
-                  name: vectro-secrets
-                  key: AWS_SECRET_ACCESS_KEY
 
-          # ── Health checks using Spring Actuator ────────────────────────────
+            # ── Sensitive value from AWS Secrets Manager (CSI-mounted) ───────
+            # The Secrets Store CSI driver writes the secret to a volume file AND
+            # can sync it to an env var via the secretObjects block in
+            # SecretProviderClass (see secret-provider-class.yaml).
+            - name: COGNITO_CLIENT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: vectro-cognito-secret   # synced K8s Secret from SecretProviderClass
+                  key: cognito_client_secret
+
+          # ── Mount the CSI secret volume so the sync happens ────────────────
+          volumeMounts:
+            - name: secrets-store
+              mountPath: /mnt/secrets
+              readOnly: true
+
+          # ── Health checks via Spring Actuator ─────────────────────────────
           livenessProbe:
             httpGet:
               path: /actuator/health
               port: 8080
-            initialDelaySeconds: 45   # Spring Boot needs ~30-40s to start
+            initialDelaySeconds: 45
             periodSeconds: 15
             failureThreshold: 3
 
@@ -112,5 +98,13 @@ spec:
             periodSeconds: 10
             failureThreshold: 3
 
-      # ── Graceful shutdown ──────────────────────────────────────────────────
+      # ── CSI secret volume – reads from AWS Secrets Manager ─────────────────
+      volumes:
+        - name: secrets-store
+          csi:
+            driver: secrets-store.csi.k8s.io
+            readOnly: true
+            volumeAttributes:
+              secretProviderClass: vectro-secret-provider
+
       terminationGracePeriodSeconds: 30

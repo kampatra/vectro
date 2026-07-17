@@ -2,7 +2,7 @@ apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
 
 metadata:
-  name: vectro-cluster
+  name: verto-cluster
   region: us-east-1
   version: "1.32"
 
@@ -10,20 +10,24 @@ iam:
   withOIDC: true   # required for IRSA (IAM Roles for Service Accounts)
 
 managedNodeGroups:
-  - name: vectro-nodes
+  - name: verto-nodes
     instanceType: t3.medium
-    minSize: 2
-    maxSize: 4
-    desiredCapacity: 2
+    minSize: 1
+    maxSize: 1
+    desiredCapacity: 1
     privateNetworking: true
     iam:
       attachPolicyARNs:
         - arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy
         - arn:aws:iam::aws:policy/AmazonEKS_CNI_Policy
         - arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly
+        # Required for the Secrets Store CSI driver to pull secrets from AWS Secrets Manager
+        - arn:aws:iam::aws:policy/SecretsManagerReadWrite
 
 addons:
   - name: vpc-cni
   - name: coredns
   - name: kube-proxy
   - name: aws-ebs-csi-driver
+  # Secrets Store CSI driver – mounts AWS Secrets Manager secrets into pods
+  - name: aws-secrets-store-csi-driver-provider
