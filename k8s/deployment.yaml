@@ -22,7 +22,7 @@ spec:
 
       containers:
         - name: vectro
-          image: 768517706273.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:684d3eb
+          image: 768517706273.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:2bead78
           imagePullPolicy: Always
           ports:
             - containerPort: 8080
