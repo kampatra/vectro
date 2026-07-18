@@ -48,6 +48,9 @@ spec:
         echo "=== Committing and pushing ==="
         git add k8s/deployment.yaml
         git commit -m "chore: update image tag to ${SHORT_TAG} [skip ci]"
-        git push https://x-access-token:${GITHUB_TOKEN}@github.com/kampatra/vectro.git HEAD:main
+        # Use git credential store to avoid special chars in URL
+        git config credential.helper store
+        echo "https://x-access-token:${GITHUB_TOKEN}@github.com" > ~/.git-credentials
+        git push https://github.com/kampatra/vectro.git HEAD:main
 
         echo "=== Image tag update pushed to GitHub successfully ==="

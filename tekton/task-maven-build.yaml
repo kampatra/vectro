@@ -9,7 +9,7 @@ spec:
       description: Cloned source code workspace
   steps:
     - name: mvn-package
-      image: public.ecr.aws/amazoncorretto/amazoncorretto:21
+      image: maven:3.9-amazoncorretto-21
       workingDir: $(workspaces.source.path)
       computeResources:
         requests:
@@ -21,8 +21,6 @@ spec:
       script: |
         #!/usr/bin/env bash
         set -euo pipefail
-        echo "=== Installing Maven ==="
-        yum install -y maven -q
         echo "=== Java version ==="
         java -version
         echo "=== Maven version ==="
