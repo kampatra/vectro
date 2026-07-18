@@ -34,6 +34,9 @@ spec:
           tekton.dev/pipeline: vectro-ci-pipeline
       spec:
         serviceAccountName: tekton-sa
+        podTemplate:
+          securityContext:
+            fsGroup: 65532
         pipelineRef:
           name: vectro-ci-pipeline
         params:
