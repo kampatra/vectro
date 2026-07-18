@@ -30,7 +30,7 @@ spec:
         #!/usr/bin/env bash
         set -euo pipefail
 
-        ECR_URI="208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro"
+        ECR_URI="768517706273.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro"
 
         echo "=== Configuring git identity ==="
         git config user.email "tekton-bot@vectro.ci"

@@ -58,7 +58,7 @@ spec:
           workspace: shared-workspace
       params:
         - name: IMAGE
-          value: 208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:$(params.git-short-sha)
+          value: 768517706273.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:$(params.git-short-sha)
         - name: GIT_REVISION
           value: $(params.git-short-sha)
 

@@ -19,7 +19,7 @@
         "ecr:BatchGetImage",
         "ecr:GetDownloadUrlForLayer"
       ],
-      "Resource": "arn:aws:ecr:us-east-1:208073622683:repository/ibm/vetro"
+      "Resource": "arn:aws:ecr:us-east-1:768517706273:repository/ibm/vetro"
     }
   ]
 }

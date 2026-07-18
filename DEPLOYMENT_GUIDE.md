@@ -12,11 +12,11 @@ and receive tokens, which they then use to access protected resources.
 | Item | Value |
 |---|---|
 | GitHub repo | https://github.com/kampatra/vectro |
-| AWS Account ID | `208073622683` |
+| AWS Account ID | `768517706273` |
 | AWS Region | `us-east-1` |
 | EKS Cluster | `verto-cluster` |
 | Node Group | `verto-nodes` |
-| ECR Image | `208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro` |
+| ECR Image | `768517706273.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro` |
 | App namespace | `vectro` |
 
 ---
@@ -130,7 +130,7 @@ ECR (Elastic Container Registry) is where Docker images are stored before Kubern
 aws ecr create-repository \
   --repository-name ibm/vetro \
   --region us-east-1
-# Creates: 208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro
+# Creates: 768517706273.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro
 ```
 
 Enable vulnerability scanning so AWS automatically checks images for known CVEs:
@@ -152,7 +152,7 @@ aws secretsmanager create-secret \
   --secret-string '{"cognito_client_secret":"<YOUR_COGNITO_CLIENT_SECRET>"}' \
   --region us-east-1
 # Replace <YOUR_COGNITO_CLIENT_SECRET> with the actual value from:
-# AWS Console → Cognito → User Pools → us-east-1_T6dPgrH15 → App clients → Show client secret
+# AWS Console → Cognito → User Pools → us-east-1_smywMCPFv → App clients → Show client secret
 ```
 
 To update the secret later:
@@ -172,7 +172,7 @@ aws iam create-policy \
   --policy-name AWSLoadBalancerControllerIAMPolicy \
   --policy-document file://alb-controller-iam-policy.json
 # Outputs a Policy ARN — copy it, you'll need it in Step 2.4
-# Example: arn:aws:iam::208073622683:policy/AWSLoadBalancerControllerIAMPolicy
+# Example: arn:aws:iam::768517706273:policy/AWSLoadBalancerControllerIAMPolicy
 ```
 
 ### Step 1.5 — Create the IAM policy for Tekton (ECR push)
@@ -182,7 +182,7 @@ Tekton needs permission to push Docker images to ECR. The policy JSON is already
 aws iam create-policy \
   --policy-name TektonECRPushPolicy \
   --policy-document file://tekton-ecr-push-policy.json
-# Example output: arn:aws:iam::208073622683:policy/TektonECRPushPolicy
+# Example output: arn:aws:iam::768517706273:policy/TektonECRPushPolicy
 ```
 
 ### Step 1.6 — Create the IAM policy for the vectro app (Cognito + Secrets Manager)
@@ -202,17 +202,17 @@ aws iam create-policy \
           "cognito-idp:GetUser",
           "cognito-idp:AdminGetUser"
         ],
-        "Resource": "arn:aws:cognito-idp:us-east-1:208073622683:userpool/us-east-1_T6dPgrH15"
+        "Resource": "arn:aws:cognito-idp:us-east-1:768517706273:userpool/us-east-1_smywMCPFv"
       },
       {
         "Sid": "SecretsManagerAccess",
         "Effect": "Allow",
         "Action": ["secretsmanager:GetSecretValue"],
-        "Resource": "arn:aws:secretsmanager:us-east-1:208073622683:secret:verto/vectro/cognito*"
+        "Resource": "arn:aws:secretsmanager:us-east-1:768517706273:secret:verto/vectro/cognito*"
       }
     ]
   }'
-# Example output: arn:aws:iam::208073622683:policy/VectroAppPolicy
+# Example output: arn:aws:iam::768517706273:policy/VectroAppPolicy
 ```
 
 ---
@@ -264,7 +264,7 @@ eksctl create iamserviceaccount \
   --cluster=verto-cluster \
   --namespace=kube-system \
   --name=aws-load-balancer-controller \
-  --attach-policy-arn=arn:aws:iam::208073622683:policy/AWSLoadBalancerControllerIAMPolicy \
+  --attach-policy-arn=arn:aws:iam::768517706273:policy/AWSLoadBalancerControllerIAMPolicy \
   --approve
 # --approve skips the confirmation prompt
 
@@ -334,7 +334,7 @@ aws iam create-role \
     \"Statement\": [{
       \"Effect\": \"Allow\",
       \"Principal\": {
-        \"Federated\": \"arn:aws:iam::208073622683:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/${OIDC_ID}\"
+        \"Federated\": \"arn:aws:iam::768517706273:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/${OIDC_ID}\"
       },
       \"Action\": \"sts:AssumeRoleWithWebIdentity\",
       \"Condition\": {
@@ -349,11 +349,11 @@ aws iam create-role \
 # Attach the VectroAppPolicy created in Step 1.6
 aws iam attach-role-policy \
   --role-name vectro-irsa-role \
-  --policy-arn arn:aws:iam::208073622683:policy/VectroAppPolicy
+  --policy-arn arn:aws:iam::768517706273:policy/VectroAppPolicy
 
 # Verify the role ARN (you'll need this in the next step)
 aws iam get-role --role-name vectro-irsa-role --query "Role.Arn" --output text
-# Expected: arn:aws:iam::208073622683:role/vectro-irsa-role
+# Expected: arn:aws:iam::768517706273:role/vectro-irsa-role
 ```
 
 The role ARN is already set in `k8s/serviceaccount.yaml`. If your account ID differs,
@@ -413,7 +413,7 @@ aws iam create-role \
     \"Statement\": [{
       \"Effect\": \"Allow\",
       \"Principal\": {
-        \"Federated\": \"arn:aws:iam::208073622683:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/${OIDC_ID}\"
+        \"Federated\": \"arn:aws:iam::768517706273:oidc-provider/oidc.eks.us-east-1.amazonaws.com/id/${OIDC_ID}\"
       },
       \"Action\": \"sts:AssumeRoleWithWebIdentity\",
       \"Condition\": {
@@ -428,11 +428,11 @@ aws iam create-role \
 # Attach the ECR push policy created in Step 1.5
 aws iam attach-role-policy \
   --role-name tekton-ecr-push-role \
-  --policy-arn arn:aws:iam::208073622683:policy/TektonECRPushPolicy
+  --policy-arn arn:aws:iam::768517706273:policy/TektonECRPushPolicy
 
 # Confirm the role was created
 aws iam get-role --role-name tekton-ecr-push-role --query "Role.Arn" --output text
-# Expected: arn:aws:iam::208073622683:role/tekton-ecr-push-role
+# Expected: arn:aws:iam::768517706273:role/tekton-ecr-push-role
 ```
 
 ### Step 3.4 — Apply all Tekton manifests

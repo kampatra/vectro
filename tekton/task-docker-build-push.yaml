@@ -6,7 +6,7 @@ metadata:
 spec:
   params:
     - name: IMAGE
-      description: Full ECR image URI with tag (e.g. 208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:abc1234)
+      description: Full ECR image URI with tag (e.g. 768517706273.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:abc1234)
       type: string
     - name: GIT_REVISION
       description: Short git commit SHA (7 chars) used as image tag
@@ -27,10 +27,10 @@ spec:
       args:
         - --dockerfile=Dockerfile
         - --context=$(workspaces.source.path)
-        - --destination=208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:$(params.GIT_REVISION)
-        - --destination=208073622683.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:latest
+        - --destination=768517706273.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:$(params.GIT_REVISION)
+        - --destination=768517706273.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro:latest
         - --snapshot-mode=redo   # faster builds
-      resources:
+      computeResources:
         requests:
           cpu: 500m
           memory: 1Gi

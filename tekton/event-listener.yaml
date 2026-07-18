@@ -5,6 +5,10 @@ metadata:
   namespace: tekton-builds
 spec:
   serviceAccountName: tekton-sa
+  resources:
+    kubernetesResource:
+      serviceType: LoadBalancer
+      servicePort: 8080
   triggers:
     - name: github-push-trigger
       interceptors:
@@ -32,25 +36,3 @@ spec:
 
       template:
         ref: vectro-trigger-template
----
-# ── Expose the EventListener via a LoadBalancer so GitHub can reach it ────────
-# The external hostname is used as the GitHub webhook Payload URL.
-# To restrict access: add an AWS Security Group rule allowing only
-# GitHub webhook IPs: https://api.github.com/meta (look for "hooks" key)
-apiVersion: v1
-kind: Service
-metadata:
-  name: el-vectro-event-listener
-  namespace: tekton-builds
-  annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: "external"
-    service.beta.kubernetes.io/aws-load-balancer-nlb-target-type: "ip"
-spec:
-  type: LoadBalancer
-  selector:
-    eventlistener: vectro-event-listener
-  ports:
-    - name: http-listener
-      port: 8080
-      targetPort: 8080
-      protocol: TCP

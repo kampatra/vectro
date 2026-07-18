@@ -11,7 +11,7 @@ spec:
     - name: mvn-package
       image: public.ecr.aws/amazoncorretto/amazoncorretto:21
       workingDir: $(workspaces.source.path)
-      resources:
+      computeResources:
         requests:
           cpu: 500m
           memory: 512Mi

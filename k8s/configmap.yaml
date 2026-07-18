@@ -11,10 +11,10 @@ data:
   AWS_REGION: "us-east-1"
 
   # ── Cognito User Pool ─────────────────────────────────────────────────────
-  COGNITO_USER_POOL_ID: "us-east-1_T6dPgrH15"
-  COGNITO_CLIENT_ID: "79cqa5kktngtgrgcjt4e6unnn6"
-  COGNITO_ISSUER_URI: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_T6dPgrH15"
-  COGNITO_JWKS_URI: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_T6dPgrH15/.well-known/jwks.json"
+  COGNITO_USER_POOL_ID: "us-east-1_smywMCPFv"
+  COGNITO_CLIENT_ID: "6uu3lhj6otpept6t35httg4sct"
+  COGNITO_ISSUER_URI: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_smywMCPFv"
+  COGNITO_JWKS_URI: "https://cognito-idp.us-east-1.amazonaws.com/us-east-1_smywMCPFv/.well-known/jwks.json"
 
   # ── Logging ───────────────────────────────────────────────────────────────
   LOGGING_LEVEL_ROOT: "INFO"
