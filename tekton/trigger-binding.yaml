@@ -15,4 +15,4 @@ spec:
 
     # First 7 characters of the SHA — used as the Docker image tag
     - name: git-short-sha
-      value: $(body.after[0:7])
+      value: $(body.after)

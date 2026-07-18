@@ -31,21 +31,23 @@ spec:
         set -euo pipefail
 
         ECR_URI="768517706273.dkr.ecr.us-east-1.amazonaws.com/ibm/vetro"
+        # Truncate to 7 chars if full SHA was passed
+        SHORT_TAG="${NEW_TAG:0:7}"
 
         echo "=== Configuring git identity ==="
         git config user.email "tekton-bot@vectro.ci"
         git config user.name "Tekton Bot"
 
-        echo "=== Patching k8s/deployment.yaml with tag: ${NEW_TAG} ==="
+        echo "=== Patching k8s/deployment.yaml with tag: ${SHORT_TAG} ==="
         # Replace any existing tag after the ECR repo URI
-        sed -i "s|${ECR_URI}:.*|${ECR_URI}:${NEW_TAG}|g" k8s/deployment.yaml
+        sed -i "s|${ECR_URI}:.*|${ECR_URI}:${SHORT_TAG}|g" k8s/deployment.yaml
 
         echo "=== Verifying change ==="
         grep "image:" k8s/deployment.yaml
 
         echo "=== Committing and pushing ==="
         git add k8s/deployment.yaml
-        git commit -m "chore: update image tag to ${NEW_TAG} [skip ci]"
+        git commit -m "chore: update image tag to ${SHORT_TAG} [skip ci]"
         git push https://x-access-token:${GITHUB_TOKEN}@github.com/kampatra/vectro.git HEAD:main
 
         echo "=== Image tag update pushed to GitHub successfully ==="
