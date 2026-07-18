@@ -22,7 +22,7 @@ spec:
         resources:
           requests:
             storage: 2Gi
-        # No storageClassName — uses the cluster default (gp3 on EKS 1.29+)
+        storageClassName: gp2
 
     # Create the PipelineRun that triggers the full CI pipeline
     - apiVersion: tekton.dev/v1
