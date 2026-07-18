@@ -36,6 +36,8 @@ spec:
           value: $(params.git-url)
         - name: revision
           value: $(params.git-revision)
+        - name: deleteExisting
+          value: "true"
 
     # ── Task 2: Build the Maven JAR ───────────────────────────────────────────
     - name: maven-build

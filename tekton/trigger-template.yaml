@@ -37,6 +37,7 @@ spec:
         podTemplate:
           securityContext:
             fsGroup: 65532
+            runAsUser: 0
         pipelineRef:
           name: vectro-ci-pipeline
         params:
