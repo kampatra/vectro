@@ -4,12 +4,39 @@ metadata:
   name: tekton-role
   namespace: tekton-builds
 rules:
+  # Tekton Pipelines
   - apiGroups: ["tekton.dev"]
     resources: ["taskruns", "pipelineruns"]
     verbs: ["get", "list", "create", "update", "patch", "watch"]
+  # Tekton Triggers (namespaced)
+  - apiGroups: ["triggers.tekton.dev"]
+    resources:
+      - eventlisteners
+      - triggerbindings
+      - triggertemplates
+      - triggers
+      - interceptors
+    verbs: ["get", "list", "watch", "create", "update", "patch"]
+  # Core resources
   - apiGroups: [""]
-    resources: ["pods", "pods/log", "secrets", "configmaps", "persistentvolumeclaims"]
+    resources: ["pods", "pods/log", "secrets", "configmaps", "persistentvolumeclaims", "serviceaccounts"]
     verbs: ["get", "list", "create", "update", "patch", "watch", "delete"]
+---
+# ClusterRole for cluster-scoped Triggers resources
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: tekton-triggers-cluster-role
+rules:
+  - apiGroups: ["triggers.tekton.dev"]
+    resources:
+      - clustertriggerbindings
+      - clusterinterceptors
+      - interceptors
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -23,4 +50,17 @@ subjects:
 roleRef:
   kind: Role
   name: tekton-role
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: tekton-triggers-cluster-rolebinding
+subjects:
+  - kind: ServiceAccount
+    name: tekton-sa
+    namespace: tekton-builds
+roleRef:
+  kind: ClusterRole
+  name: tekton-triggers-cluster-role
   apiGroup: rbac.authorization.k8s.io
